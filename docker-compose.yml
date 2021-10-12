@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres:13
+    restart: always
+    container_name: stubby-integration-tests
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: stubby
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: stubby_tests
