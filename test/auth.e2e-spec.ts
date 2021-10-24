@@ -1,20 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import * as bcrypt from 'bcrypt';
+import * as cookie from 'cookie';
 
 import prisma from '../prisma/prisma-client';
-import { AppModule } from './../src/app.module';
+
+import { runApp } from './seeds/general';
+import { existingUser } from './data/users';
+import { createExistingUsers } from './seeds/users';
+import { createAuthCookieFromResponse } from './utils/cookies';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
-
-  const existingUser = {
-    email: 'someemail@mail.ru',
-    confirmationCode: 'someconfirmationcode',
-    confirmedAt: new Date(),
-    password: 'somepassword',
-  };
 
   const userSignupRequestData = {
     email: 'user@mail.ru',
@@ -22,25 +18,11 @@ describe('AuthController (e2e)', () => {
   };
 
   beforeAll(async () => {
-    const salt = await bcrypt.genSalt();
-    const password = await bcrypt.hash(existingUser.password, salt);
-
-    await prisma.user.create({
-      data: {
-        ...existingUser,
-        password: password,
-        salt,
-      },
-    });
+    await createExistingUsers();
   });
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    app = await runApp();
   });
 
   it('should not sign up user with invalid sign up request data', () => {
@@ -86,17 +68,27 @@ describe('AuthController (e2e)', () => {
       },
     });
 
-    await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .put('/auth/verify')
       .send({ email: user.email, confirmationCode: user.confirmationCode })
       .expect(200);
+
+    expect(response.headers['set-cookie'][0]).toBeDefined();
+    expect(cookie.parse(response.headers['set-cookie'][0])).toHaveProperty(
+      'Authentication',
+    );
   });
 
-  it('should login user by valid credentials', () => {
-    return request(app.getHttpServer())
+  it('should login user by valid credentials', async () => {
+    const response = await request(app.getHttpServer())
       .post('/auth/signin')
       .send({ email: existingUser.email, password: existingUser.password })
       .expect(200);
+
+    expect(response.headers['set-cookie'][0]).toBeDefined();
+    expect(cookie.parse(response.headers['set-cookie'][0])).toHaveProperty(
+      'Authentication',
+    );
   });
 
   it('should not login user by invalid credentials', () => {
@@ -106,7 +98,27 @@ describe('AuthController (e2e)', () => {
       .expect(400);
   });
 
+  it('should log out user by valid credentials', async () => {
+    const signInResponse = await request(app.getHttpServer())
+      .post('/auth/signin')
+      .send({ email: existingUser.email, password: existingUser.password })
+      .expect(200);
+
+    const signOutResponse = await request(app.getHttpServer())
+      .put('/auth/signout')
+      .set('Cookie', [createAuthCookieFromResponse(signInResponse)])
+      .expect(200);
+
+    const signOutCookies = cookie.parse(
+      signOutResponse.headers['set-cookie'][0],
+    );
+
+    expect(signOutCookies).toHaveProperty('Authentication');
+    expect(signOutCookies.Authentication).toEqual('');
+  });
+
   afterAll(async () => {
     await app.close();
+    await prisma.user.deleteMany();
   });
 });

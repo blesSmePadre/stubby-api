@@ -1,7 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import { random } from 'lodash';
 
 import { SignInCredentialsDto } from './dto/sign-in-credentials';
@@ -15,7 +13,6 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private configService: ConfigService,
-    private jwtService: JwtService,
     private mailService: MailService,
   ) {}
 
@@ -72,15 +69,7 @@ export class AuthService {
 
     await this.usersService.confirmUser(user);
 
-    return this.signInUser(user);
-  }
-
-  signInUser(user: User) {
-    return {
-      accessToken: this.jwtService.sign({
-        sub: user.id,
-      }),
-    };
+    return user;
   }
 
   async validateUser(signInCredentialsDto: SignInCredentialsDto) {
