@@ -19,6 +19,7 @@ import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up';
 import { VerifyUserDto } from './dto/verify-user';
 import { LocalAuthGuard } from './local-auth.guard';
+import { UsersService } from 'users/users.service';
 
 import { signInCookie, signOutCookie } from 'templates/cookies';
 
@@ -27,6 +28,7 @@ import { signInCookie, signOutCookie } from 'templates/cookies';
 export class AuthController {
   constructor(
     private authService: AuthService,
+    private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -44,7 +46,7 @@ export class AuthController {
     const user = await this.authService.verifyUser(verifyUserDto);
 
     this.setAuthCookie(user, res);
-    res.sendStatus(200);
+    res.send(this.usersService.getUserData(user));
   }
 
   @HttpCode(200)
@@ -52,7 +54,7 @@ export class AuthController {
   @Post('/signin')
   async signIn(@Req() req: Request, @Res() res: Response) {
     this.setAuthCookie(req.user, res);
-    res.sendStatus(200);
+    res.send(this.usersService.getUserData(req.user));
   }
 
   @Put('/signout')
