@@ -60,7 +60,7 @@ export class AuthController {
   @Put('/signout')
   @Public(false)
   async signOut(@Res() res: Response) {
-    await res.setHeader('Set-Cookie', signOutCookie);
+    res.setHeader('Set-Cookie', signOutCookie);
     res.sendStatus(200);
   }
 
