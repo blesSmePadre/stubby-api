@@ -44,6 +44,7 @@
     "cookie": "^0.4.1",
     "cookie-parser": "^1.4.5",
     "dotenv-cli": "^4.0.0",
+    "googleapis": "^92.0.0",
     "jest-mock-extended": "^2.0.4",
     "lodash": "^4.17.21",
     "nodemailer": "^6.7.0",
