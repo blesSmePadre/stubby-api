@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { Public } from 'decorators/public';
 import { Request, Response } from 'express';
+import { OAuthToken } from './dto/oauth-token';
 
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up';
@@ -22,16 +23,29 @@ import { LocalAuthGuard } from './local-auth.guard';
 import { UsersService } from 'users/users.service';
 
 import { signInCookie, signOutCookie } from 'templates/cookies';
+import { GoogleAuthService } from './google-auth.service';
 
 @Controller('auth')
 @Public()
 export class AuthController {
   constructor(
     private authService: AuthService,
+    private googleAuthService: GoogleAuthService,
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
+  @Post('/oauth')
+  async authenticate(
+    @Body(ValidationPipe) oauthToken: OAuthToken,
+    @Res() res: Response,
+  ) {
+    const user = await this.googleAuthService.authenticate(oauthToken.token);
+
+    this.setAuthCookie(user, res);
+    res.send(this.usersService.getUserData(user));
+  }
 
   @Post('/signup')
   async signUp(@Body(ValidationPipe) signUpDto: SignUpDto) {

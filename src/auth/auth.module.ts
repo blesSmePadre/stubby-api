@@ -9,6 +9,7 @@ import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { NotificationsModule } from 'notifications/notifications.module';
 import { UsersModule } from 'users/users.module';
+import { GoogleAuthService } from './google-auth.service';
 
 @Module({
   imports: [
@@ -28,6 +29,6 @@ import { UsersModule } from 'users/users.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LocalStrategy],
+  providers: [AuthService, JwtStrategy, LocalStrategy, GoogleAuthService],
 })
 export class AuthModule {}

@@ -11,6 +11,15 @@ import { PrismaService } from 'shared/services/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
+  createOAuthUser(email: string) {
+    return this.prisma.user.create({
+      data: {
+        email,
+        oauth: true,
+      },
+    });
+  }
+
   async createUser(signUpDto: SignUpDto & { confirmationCode: string }) {
     const { email, password, confirmationCode } = signUpDto;
 
@@ -20,6 +29,7 @@ export class UsersService {
       data: {
         email,
         salt,
+        oauth: false,
         confirmationCode: String(confirmationCode),
         password: await this.hashPassword(password, salt),
       },
