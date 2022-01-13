@@ -91,7 +91,14 @@ export class UsersService {
   }
 
   getUserData(user: User) {
-    return omit(user, 'password', 'salt', 'confirmationCode', 'confirmedAt');
+    return omit(
+      user,
+      'oauth',
+      'password',
+      'salt',
+      'confirmationCode',
+      'confirmedAt',
+    );
   }
 
   private hashPassword(password: string, salt: string): Promise<string> {
