@@ -1,7 +1,8 @@
 import { template } from 'lodash';
 
 export const signInCookie = template(
-  'Authentication=<%= token %>; HttpOnly; Path=/; Max-Age=<%= exp %>',
+  'Authentication=<%= token %>; HttpOnly; SameSite=None; Path=/; Max-Age=<%= exp %>',
 );
 
-export const signOutCookie = 'Authentication=; HttpOnly; Path=/; Max-Age=0';
+export const signOutCookie =
+  'Authentication=; HttpOnly; SameSite=None; Path=/; Max-Age=0';
