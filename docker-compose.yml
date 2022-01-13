@@ -6,6 +6,6 @@ services:
     ports:
       - '5433:5432'
     environment:
-      POSTGRES_USER: stubby
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: stubby_tests
+      POSTGRES_USER: local_test
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: stubby_test
