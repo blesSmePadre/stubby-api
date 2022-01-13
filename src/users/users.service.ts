@@ -16,6 +16,7 @@ export class UsersService {
       data: {
         email,
         oauth: true,
+        confirmedAt: new Date(),
       },
     });
   }
